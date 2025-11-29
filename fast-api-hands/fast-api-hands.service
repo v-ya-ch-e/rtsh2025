@@ -1,0 +1,13 @@
+[Unit]
+Description=FastAPI Hands Server
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/fast-api-hands
+ExecStart=/home/ubuntu/fast-api-hands/venv/bin/python3 main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

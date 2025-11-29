@@ -37,5 +37,6 @@ A simple FastAPI application to serve company data from a MySQL database.
 2.  **Access the Endpoint**:
     Open your browser or use curl:
     ```bash
-    curl http://localhost:8000/companies
-    ```
+## Deployment
+
+For detailed instructions on how to deploy this application to AWS EC2, please refer to [DEPLOYMENT.md](DEPLOYMENT.md).

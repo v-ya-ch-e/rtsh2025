@@ -1,6 +1,6 @@
 
 def get_fac_prompt(input):
-    return (('You are a master negotiator finding real-time facts about the topic of discussion. Analyze the statement below and find the relevant facts.'
+    return (('You are a master negotiator finding real-time facts about the topic of discussion. Analyze the statement below and find the relevant facts. Try to find facts, which are not obvious from the statement itself.'
              '\nInput Text: \n----------------\n"')+
             input+
             ('"\n----------------\n'

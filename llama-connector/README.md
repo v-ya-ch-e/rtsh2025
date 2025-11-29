@@ -59,6 +59,10 @@ This project implements a real-time negotiation assistant server using AWS Bedro
     ```
     This sends a sample message from `text_block1` (or a default string) and prints the JSON response.
 
+## Deployment
+
+For detailed instructions on how to deploy this application to AWS EC2, please refer to [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Protocol
 
 **Request (JSON)**:

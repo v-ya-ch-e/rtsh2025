@@ -9,6 +9,7 @@ __pycache__/
 
 # Secrets
 dbcreds.py
+dbcreds.json
 
 # Output
 output_*

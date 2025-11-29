@@ -209,7 +209,7 @@ async def main():
     await init_db_pool()
     print("DB Pool initialized")
     print("Starting WebSocket server on port 8767...")
-    async with websockets.serve(handler, "localhost", 8767):
+    async with websockets.serve(handler, "0.0.0.0", 8767):
         await asyncio.Future()  # run forever
 
 

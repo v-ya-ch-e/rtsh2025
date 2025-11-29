@@ -6,7 +6,7 @@ from RAG_helper.constants import QUERY_RES_LIMIT
 
 # 2. CONNECT TO DATABASE (No ingestion logic here)
 def processQuery(query, company_id):
-    db_path = "/Users/zero_skill/Documents/context_company_" + str(company_id)
+    db_path = "data/context_company_" + str(company_id)
     db = chromadb.PersistentClient(path=db_path)
     chroma_collection = db.get_collection(
         name="collection_dev_0" + str(company_id),

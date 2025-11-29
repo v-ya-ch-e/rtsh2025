@@ -1,5 +1,6 @@
 # cred.json
 .idea/
+RAG_helper/cred
 #.gradle/
 #.kotlin/
 #backend/build/

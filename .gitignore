@@ -1,6 +1,15 @@
-# cred.json
 .idea/
+.venv/
 RAG_helper/cred
-#.gradle/
-#.kotlin/
-#backend/build/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Secrets
+dbcreds.py
+
+# Output
+output_*
+final_result

@@ -1,0 +1,7 @@
+{
+  "URI": "ws://3.67.9.62:8767",
+  "message_template": {
+            "conv_id": "UNIQUE_ID_FOR_EACH_CONVERSATION",
+            "text": "YOUR_TEXT_BATCH"
+        }
+}

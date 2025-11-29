@@ -38,7 +38,7 @@ async def init_db_pool():
     )
 
 
-async def save_to_db(conv_id, text):
+async def save_to_db(conv_id, text, author):
     if not db_pool:
         print("DB pool not initialized")
         return
@@ -54,10 +54,10 @@ async def save_to_db(conv_id, text):
 
                 # Insert the new message
                 await cur.execute(
-                    "INSERT INTO dialogs (conv_id, message_id, message) VALUES (%s, %s, %s)",
-                    (conv_id, new_msg_id, text)
+                    "INSERT INTO dialogs (conv_id, message_id, message, author) VALUES (%s, %s, %s, %s)",
+                    (conv_id, new_msg_id, text, author)
                 )
-                print(f"Saved message to DB: conv_id={conv_id}, msg_id={new_msg_id}")
+                print(f"Saved message to DB: conv_id={conv_id}, msg_id={new_msg_id}, author={author}")
     except Exception as e:
         print(f"Error saving to DB: {e}")
 
@@ -112,14 +112,27 @@ async def ask_llm(client, prompt):
         return ""
 
 
-async def process_text(input_text):
-    print(f"Processing input: {input_text[:50]}...")
+import sys
+import os
+# Add parent directory to sys.path to allow importing RAG_helper
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from RAG_helper.processQuery import processQuery
+
+async def process_text(input_text, company_id, author):
+    print(f"Processing input from {author}: {input_text[:50]}...")
     
+    # Retrieve context from RAG
+    context = await asyncio.to_thread(processQuery, input_text, company_id)
+    if context:
+        print(f"Retrieved context (len={len(context)})")
+    else:
+        print("No context retrieved")
+
     # Run all requests in parallel using the same Bedrock client
     results = await asyncio.gather(
-        ask_llm(bedrock_runtime, get_sus_prompt(input_text)),
-        ask_llm(bedrock_runtime, get_sug_prompt(input_text)),
-        ask_llm(bedrock_runtime, get_fac_prompt(input_text))
+        ask_llm(bedrock_runtime, get_sus_prompt(input_text, context, author)),
+        ask_llm(bedrock_runtime, get_sug_prompt(input_text, context, author)),
+        ask_llm(bedrock_runtime, get_fac_prompt(input_text, context, author))
     )
 
     response_sus, response_sug, response_fac = results
@@ -135,7 +148,7 @@ async def process_text(input_text):
     for attempt in range(max_retries):
         print(f"Generating final result (Attempt {attempt + 1}/{max_retries})...")
         final_result_list = await asyncio.gather(
-            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac))
+            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, context, author))
         )
         raw_result = final_result_list[0]
         
@@ -182,17 +195,19 @@ async def handler(websocket):
                 data = json.loads(message)
                 conv_id = data.get("conv_id")
                 input_text = data.get("text")
+                company_id = data.get("company_id", 1) # Default to 1 if not provided
+                author = data.get("author", "user") # Default to "user" if not provided
                 
                 if conv_id is None or input_text is None:
                     print("Invalid message format")
                     continue
 
-                print(f"Received message for conv_id={conv_id}")
+                print(f"Received message for conv_id={conv_id}, company_id={company_id}, author={author}")
                 
                 # Fire-and-forget DB save
-                asyncio.create_task(save_to_db(conv_id, input_text))
+                asyncio.create_task(save_to_db(conv_id, input_text, author))
                 
-                response = await process_text(input_text)
+                response = await process_text(input_text, company_id, author)
                 await websocket.send(response)
                 print("Sent response")
                 

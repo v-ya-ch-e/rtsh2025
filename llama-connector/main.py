@@ -1,30 +1,23 @@
 import time
 import asyncio
 import os
-from openai import AsyncOpenAI
+import json
+import boto3
 
 from sus_prompt import get_sus_prompt
 from sug_prompt import get_sug_prompt
 from fac_prompt import get_fac_prompt
 from final_prompt import get_final_prompt
 
-# Client 1 (Default port)
-client1 = AsyncOpenAI(
-    base_url="http://localhost:11434/v1",
-    api_key="ollama"
+# Initialize Bedrock Runtime Client
+# Region: eu-central-1 (Frankfurt)
+bedrock_runtime = boto3.client(
+    service_name='bedrock-runtime',
+    region_name='eu-central-1'
 )
 
-# Client 2 (Second port for parallelism)
-client2 = AsyncOpenAI(
-    base_url="http://localhost:11435/v1",
-    api_key="ollama"
-)
-
-# Client 3 (Third port for parallelism)
-client3 = AsyncOpenAI(
-    base_url="http://localhost:11436/v1",
-    api_key="ollama"
-)
+# Model ID for Claude 3 Haiku
+MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
 
 
 async def ask_llm(client, prompt):
@@ -32,50 +25,60 @@ async def ask_llm(client, prompt):
     # print("Assistant: ", end="", flush=True)
 
     start_time = time.time()
-    first_token_received = False
+    ttft = 0 # TTFT is harder to measure precisely without streaming, but we can measure total latency
 
-    ttft = 0
+    # Construct the payload for Claude 3
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 256,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+        ],
+        "temperature": 0.0
+    })
 
     try:
-        stream = await client.chat.completions.create(
-            model="llama3.1",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=256,
-            stream=True
+        # Run the synchronous boto3 call in a separate thread to avoid blocking the event loop
+        response = await asyncio.to_thread(
+            client.invoke_model,
+            body=body,
+            modelId=MODEL_ID,
+            accept='application/json',
+            contentType='application/json'
         )
 
-        result = ""
-
-        async for chunk in stream:
-            if chunk.choices[0].delta.content:
-                content = chunk.choices[0].delta.content
-
-                if not first_token_received:
-                    ttft = (time.time() - start_time) * 1000
-                    first_token_received = True
-                    print(f" [TTFT: {ttft:.2f}ms] \n", end="")
-
-                result += content;
-                # print(content, end="", flush=True)
+        response_body = json.loads(response.get('body').read())
+        result = response_body.get('content')[0].get('text')
+        
+        # print(result, end="", flush=True)
 
         print(f" [GEN LATENCY: {(time.time() - start_time - ttft/1000)*1000:.2f}ms] \n", end="")
         print(f" [FULL LATENCY: {(time.time() - start_time)*1000:.2f}ms] \n", end="")
         # print("\n" + "-" * 30)
         return result
+
     except Exception as e:
-        print(f"Error connecting to client {client.base_url}: {e}")
+        print(f"Error invoking Bedrock model: {e}")
         return ""
 
 
 async def main():
-    input_text = open("text_block", "r").read()
+    input_text = open("text_block1", "r").read()
 
-    # Run all requests in parallel using different clients
+    # Run all requests in parallel using the same Bedrock client
+    # boto3 clients are thread-safe, so we can share the client instance
     results = await asyncio.gather(
-        ask_llm(client1, get_sus_prompt(input_text)),
-        ask_llm(client2, get_sug_prompt(input_text)),
-        ask_llm(client3, get_fac_prompt(input_text))
+        ask_llm(bedrock_runtime, get_sus_prompt(input_text)),
+        ask_llm(bedrock_runtime, get_sug_prompt(input_text)),
+        ask_llm(bedrock_runtime, get_fac_prompt(input_text))
     )
 
     response_sus, response_sug, response_fac = results
@@ -85,7 +88,7 @@ async def main():
     open("output_fac", "w").write(response_fac)
 
     result = await asyncio.gather(
-        ask_llm(client1, get_final_prompt(input_text, response_sus, response_sug, response_fac))
+        ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac))
     )
 
     open("final_result", "w").write(result[0])

@@ -9,7 +9,7 @@ def get_final_prompt(input, sus, sug, fac):
              '\nSUGGESTION HELPER: '+sug+
              '\nFACT HELPER: '+fac+
              '\nYOUR OUTPUT RULES: '
-             '\n1. Output strictly: "MESSAGE_COLOR: {red, green, blue}\n". Use red for bluffs, green for next moves and blue for facts.'
-             '\n2. Output strictly: "MESSAGE: [PICKED MESSAGE]".'
-             '\n3. Do not exceed 50 words. Be direct.'
-             '\n4. DO NOT RETURN ANY OF YOUR THOUGHTS. RETURN STRICTLY THE OUTPUT DEFINED ABOVE. DO NOT ADD ANY OTHER SYMBOLS OR TEXT FORMATING'))
+             '\n1. Output strictly a JSON object with keys: "MESSAGE_COLOR" and "MESSAGE".'
+             '\n2. Use red for bluffs, green for next moves and blue for facts.'
+             '\n3. Do not exceed 50 words for the message. Be direct.'
+             '\n4. DO NOT RETURN ANY OF YOUR THOUGHTS. RETURN STRICTLY THE JSON OBJECT. DO NOT ADD ANY MARKDOWN FORMATTING.'))

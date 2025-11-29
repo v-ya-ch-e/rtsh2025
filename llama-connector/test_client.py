@@ -3,7 +3,7 @@ import websockets
 import json
 
 async def hello():
-    uri = "ws://localhost:8767"
+    uri = "ws://3.67.9.62:8767"
     async with websockets.connect(uri) as websocket:
         # Read input from file to simulate real usage
         try:

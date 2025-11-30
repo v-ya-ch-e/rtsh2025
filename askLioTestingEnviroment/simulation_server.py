@@ -160,7 +160,7 @@ class SimulationServer:
                 if not vendors:
                     logger.error("No vendors found")
                     return False
-                self.vendor_id = vendors[5]["id"]
+                self.vendor_id = vendors[4]["id"]
 
             # 2. Create conversation
             async with session.post(
@@ -197,7 +197,7 @@ class SimulationServer:
                 message = {
                     "conv_id": self.conversation_id if self.conversation_id else 999,
                     "text": text,
-                    "company_id": 1,
+                    "company_id": 2,
                     "author": author
                 }
                 await websocket.send(json.dumps(message))

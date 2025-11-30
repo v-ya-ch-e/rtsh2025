@@ -11,6 +11,7 @@ from RAG_helper.constants import QUERY_RES_LIMIT
 
 # 2. CONNECT TO DATABASE (No ingestion logic here)
 def processQuery(query, company_id):
+    return open("data/context_company_"+company_id+"/full_dataset_company_"+company_id+".md").read()
     if not CHROMA_AVAILABLE:
         return ""
 

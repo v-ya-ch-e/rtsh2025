@@ -114,6 +114,15 @@ cp ../llama-connector/dbcreds.py .
     sudo systemctl start fast-api-hands
     ```
 
+#### Simulation Environment Service (Optional)
+1.  Edit `simulation-env.service` to match paths (e.g., `/home/ubuntu/rtsh2025/askLioTestingEnviroment`).
+2.  Copy and start:
+    ```bash
+    sudo cp simulation-env.service /etc/systemd/system/
+    sudo systemctl enable simulation-env
+    sudo systemctl start simulation-env
+    ```
+
 ### 8. Verification
 - **WebSocket**: `ws://<public-ip>:8767`
 - **API**: `http://<public-ip>:8000/companies`

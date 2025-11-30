@@ -145,6 +145,7 @@ VISUALIZER_HTML = """
 class SimulationServer:
     def __init__(self):
         self.conversation_id = None
+        self.asklio_conversation_id = None
         self.vendor_id = None
 
     async def init_asklio(self):
@@ -172,16 +173,30 @@ class SimulationServer:
                     logger.error(f"Failed to create conversation: {await resp.text()}")
                     return False
                 conversation = await resp.json()
-                self.conversation_id = conversation["id"]
-                logger.info(f"Initialized AskLio conversation: {self.conversation_id}")
-                return True
+                self.asklio_conversation_id = conversation["id"]
+                logger.info(f"Initialized AskLio conversation: {self.asklio_conversation_id}")
+
+            # 3. Create Local Conversation
+            async with session.post(
+                "http://localhost:8000/conversations",
+                json={"vendor_id": self.vendor_id}
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    self.conversation_id = data["id"]
+                    logger.info(f"Initialized Local conversation: {self.conversation_id}")
+                else:
+                    logger.error(f"Failed to create local conversation: {await resp.text()}")
+                    self.conversation_id = 999 # Fallback
+
+            return True
 
     async def send_to_asklio(self, text):
         """Send message to AskLio and get response"""
         connector = aiohttp.TCPConnector(ssl=False)
         async with aiohttp.ClientSession(connector=connector) as session:
             async with session.post(
-                f"{ASKLIO_API_BASE}/messages/{self.conversation_id}",
+                f"{ASKLIO_API_BASE}/messages/{self.asklio_conversation_id}",
                 data={"content": text}
             ) as resp:
                 if resp.status not in (200, 201):
@@ -245,7 +260,7 @@ class SimulationServer:
                     
                     if vendor_text:
                         # 3. Process Vendor Message
-                        llama_res_vendor = await self.get_llama_hint(vendor_text, "opponent")
+                        llama_res_vendor = await self.get_llama_hint(vendor_text, "vendor")
                         
                         # Send to WS client
                         await ws.send_json({"type": "message", "author": "vendor", "text": vendor_text})

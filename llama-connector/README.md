@@ -9,12 +9,16 @@ This project implements a real-time negotiation assistant server using AWS Bedro
 - **Async DB Saving**: Saves messages to a MySQL database in the background without blocking the response.
 - **JSON Output**: Returns structured JSON responses (`MESSAGE_COLOR`, `MESSAGE`).
 - **Retry Logic**: Automatically retries if the LLM fails to generate valid JSON.
+- **Author Awareness**: Distinguishes between **User (Buyer)** and **Vendor (Seller)** to provide targeted advice.
+- **Dynamic Knowledge Base**: Fetches company-specific tactics and facts from the database.
+- **Conversation Tracking**: Supports creating and tracking conversations via a dedicated API.
 
 ## Prerequisites
 
 - Python 3.8+
 - AWS Account with Bedrock access (Claude 3 Haiku enabled in `eu-central-1`).
 - MySQL Database.
+- **FastAPI Hands**: Companion service for managing company data and conversations.
 
 ## Installation
 
@@ -69,9 +73,12 @@ For detailed instructions on how to deploy this application to AWS EC2, please r
 ```json
 {
   "conv_id": 123,
-  "text": "I want to ensure you, that our product is great..."
+  "text": "I want to ensure you, that our product is great...",
+  "company_id": 1,
+  "author": "vendor" 
 }
 ```
+*Note: `author` can be `"user"` (Buyer) or `"vendor"` (Seller).*
 
 **Response (JSON)**:
 ```json

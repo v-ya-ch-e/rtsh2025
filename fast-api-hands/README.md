@@ -1,6 +1,6 @@
-# FastAPI Hands
+# Sekundant - FastAPI Hands
 
-**FastAPI Hands** is the backend API and data storage service for the `rtsh2025` project. It manages company data, conversations, documents, and the unified keyword system.
+**FastAPI Hands** is the backend API and data storage service for the **Sekundant** project. It manages company data, conversations, documents, and the unified keyword system.
 
 ## Features
 
@@ -12,7 +12,8 @@
 - **Document Management**:
     - `POST /companies/{id}/documents`: Upload PDF/Doc files.
     - `GET /companies/{id}/documents`: List uploaded documents.
-- **Legacy Storage**: Supports legacy `context` and `knowledge` file endpoints (migrated to keywords).
+- **Conversation Summary**:
+    - `GET /get_summary/{conv_id}`: Generate a summary of the conversation using Claude 3.5 Sonnet.
 
 ## Setup
 
@@ -38,6 +39,7 @@
 ### Conversations
 - `POST /conversations`: Create a new conversation.
     - Body: `{"vendor_id": int}`
+- `GET /get_summary/{conv_id}`: Get a summary of the conversation.
 
 ### Keywords (Unified Context)
 - `GET /companies/{id}/keywords`: Get keywords.

@@ -1,6 +1,6 @@
-# Real-Time Negotiation Assistant (rtsh2025)
+# Sekundant (formerly rtsh2025)
 
-**rtsh2025** is a comprehensive, real-time negotiation assistant designed to help buyers secure the best deals. It leverages advanced AI (Claude 3 Haiku via AWS Bedrock) to analyze conversations, detect manipulative tactics, verify facts, and provide strategic, actionable advice in real-time.
+**Sekundant** is a comprehensive, real-time negotiation assistant designed to help buyers secure the best deals. It leverages advanced AI (Claude 3 Haiku & Sonnet via AWS Bedrock) to analyze conversations, detect manipulative tactics, verify facts, and provide strategic, actionable advice in real-time.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ The system is composed of three microservices:
 2.  **FastAPI Hands (`fast-api-hands/`)**:
     - **Role**: The "Backbone". Manages data, storage, and API endpoints.
     - **Tech**: FastAPI (Port 8000), MySQL.
-    - **Key Features**: Company management, Document storage, Keyword management, Conversation tracking.
+    - **Key Features**: Company management, Document storage, Keyword management, Conversation tracking, Conversation Summarization.
 
 3.  **Simulation Environment (`askLioTestingEnviroment/`)**:
     - **Role**: The "Playground". A testing suite for validating the AI.
@@ -29,6 +29,7 @@ The system is composed of three microservices:
 - **Author Awareness**: Distinguishes between the Buyer (User) and Seller (Vendor) to provide context-aware guidance.
 - **Conditional Silence**: The AI knows when to stay quiet ("NO_RESPONSE") to avoid overwhelming the user.
 - **Document Management**: Upload and manage vendor documents (PDFs, etc.) via a dashboard.
+- **Conversation Summary**: Generates high-quality summaries of negotiations using Claude 3.5 Sonnet.
 
 ## Quick Start
 

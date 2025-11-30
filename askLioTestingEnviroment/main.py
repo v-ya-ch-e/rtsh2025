@@ -9,7 +9,7 @@ vendors_response = requests.get(
     params={"team_id": TEAM_ID}
 )
 vendors = vendors_response.json()
-vendor_id = vendors[0]["id"]
+vendor_id = vendors[5]["id"]
 
 # 2. Create conversation
 conversation_response = requests.post(

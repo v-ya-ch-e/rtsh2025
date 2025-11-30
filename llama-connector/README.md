@@ -1,82 +1,46 @@
-# Llama Connector (Negotiation Assistant)
+# Sekundant - Llama Connector
 
-This project implements a real-time negotiation assistant server using AWS Bedrock (Claude 3 Haiku) and WebSockets. It analyzes conversation text in parallel to detect bluffs, suggest next moves, and find relevant facts, then aggregates the results into a final recommendation.
+The **Llama Connector** is the core AI logic server for the **Sekundant** negotiation assistant. It connects to **AWS Bedrock** (Claude 3 Haiku) to analyze negotiation conversations in real-time and provides strategic advice to the user.
 
 ## Features
 
-- **WebSocket Server**: Listens for incoming conversation text.
-- **Parallel Processing**: Uses `asyncio` to run three analysis prompts concurrently on AWS Bedrock.
-- **Async DB Saving**: Saves messages to a MySQL database in the background without blocking the response.
-- **JSON Output**: Returns structured JSON responses (`MESSAGE_COLOR`, `MESSAGE`).
-- **Retry Logic**: Automatically retries if the LLM fails to generate valid JSON.
+- **Real-Time Analysis**: Uses WebSocket to receive messages and send instant feedback.
+- **Parallel Execution**: Runs three specialized prompts concurrently:
+    1.  **Suspicion Analysis**: Detects bluffs, inconsistencies, and weaknesses.
+    2.  **Suggestion Engine**: Proposes the next best tactical move.
+    3.  **Fact Checker**: Extracts and verifies prices, specs, and history.
+- **Unified Keyword System**: Fetches company-specific keywords (tactics, facts, context) from the backend API to ground the AI's advice.
+- **Author Awareness**: Distinguishes between **User (Buyer)** and **Vendor (Seller)** to provide targeted advice.
+- **Hint Saving**: Saves AI-generated hints to the database for future reference.
+- **Conditional Responses**: The AI can choose to remain silent ("NO_RESPONSE") if no action is needed.
+- **JSON Output**: Returns structured JSON responses for easy frontend integration.
 
-## Prerequisites
+## Architecture
 
-- Python 3.8+
-- AWS Account with Bedrock access (Claude 3 Haiku enabled in `eu-central-1`).
-- MySQL Database.
+- **Server**: Python WebSocket Server (Port `8767`).
+- **AI Model**: Claude 3 Haiku (`anthropic.claude-3-haiku-20240307-v1:0`) via AWS Bedrock (`eu-central-1`).
+- **Database**: Async MySQL connection (`aiomysql`) for saving history and hints.
+- **Backend Integration**: Fetches keywords from `fast-api-hands` (`http://localhost:8000`).
 
-## Installation
+## Setup
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <your-repo-url>
-    cd llama-connector
-    ```
-
-2.  **Install dependencies**:
+1.  **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-## Configuration
+2.  **Configure Database**:
+    - Copy `dbcreds_template.py` to `dbcreds.py`.
+    - Fill in your MySQL database credentials.
 
-1.  **AWS Credentials**:
-    Ensure you have configured your AWS credentials. You can use the AWS CLI:
-    ```bash
-    aws configure
-    ```
-    Or set environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION=eu-central-1`.
+3.  **Configure AWS**:
+    - Ensure you have AWS credentials configured (`~/.aws/credentials`) with access to Bedrock.
 
-2.  **Database Credentials**:
-    Copy the template and fill in your details:
-    ```bash
-    cp dbcreds_template.py dbcreds.py
-    ```
-    Edit `dbcreds.py` with your MySQL host, user, password, and database name.
-
-## Usage
-
-1.  **Start the Server**:
+4.  **Run**:
     ```bash
     python3 main.py
     ```
-    The server will start on `ws://localhost:8767`.
 
-2.  **Run the Test Client**:
-    ```bash
-    python3 test_client.py
-    ```
-    This sends a sample message from `text_block1` (or a default string) and prints the JSON response.
+## API
 
-## Deployment
-
-For detailed instructions on how to deploy this application to AWS EC2, please refer to [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Protocol
-
-**Request (JSON)**:
-```json
-{
-  "conv_id": 123,
-  "text": "I want to ensure you, that our product is great..."
-}
-```
-
-**Response (JSON)**:
-```json
-{
-  "MESSAGE_COLOR": "red",
-  "MESSAGE": "The claim lacks specific evidence..."
-}
-```
+See [API.md](API.md) for details on the WebSocket protocol.

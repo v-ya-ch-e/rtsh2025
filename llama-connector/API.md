@@ -1,45 +1,49 @@
-# Llama Connector API Documentation
+# Sekundant - Llama Connector API
 
-## WebSocket Endpoint
-**URL**: `ws://<server-ip>:8767`
+The Llama Connector exposes a WebSocket API on port `8767`.
 
-## Message Protocol
+## Connection
 
-### Request (Client -> Server)
-The client sends a JSON object with the following fields:
+**URL**: `ws://<server_ip>:8767`
+
+## Messages
+
+### Request Format (Client -> Server)
+
+Send a JSON object with the following fields:
 
 | Field | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
 | `conv_id` | Integer | Yes | Unique identifier for the conversation. |
 | `text` | String | Yes | The text message to analyze. |
-| `company_id` | Integer | No | ID of the company for RAG context (default: 1). |
-| `author` | String | No | Who sent the text: `"user"` or `"opponent"` (default: `"user"`). |
+| `company_id` | Integer | No | ID of the company for keyword retrieval (default: 1). |
+| `author` | String | No | Who sent the text: `"user"` (Buyer) or `"vendor"` (Seller) (default: `"user"`). |
 
 **Example:**
 ```json
 {
   "conv_id": 123,
-  "text": "We cannot go lower than $500.",
+  "text": "We can offer a 5% discount if you sign today.",
   "company_id": 1,
-  "author": "opponent"
+  "author": "vendor"
 }
 ```
 
-### Response (Server -> Client)
-The server responds with a JSON object containing the analysis and recommendation.
+### Response Format (Server -> Client)
+
+The server returns a JSON object with the AI's analysis and advice.
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `MESSAGE_COLOR` | String | Color code for the message (e.g., "red", "green", "yellow"). |
-| `MESSAGE` | String | The analysis or recommendation text. |
+| `MESSAGE_COLOR` | String | Color code for the advice: `"red"` (Warning), `"green"` (Go/Good), `"blue"` (Info), `"yellow"` (Caution). |
+| `MESSAGE` | String | The advice text to display to the user. Max 50 words. |
 
 **Example:**
 ```json
 {
   "MESSAGE_COLOR": "red",
-  "MESSAGE": "The opponent is likely bluffing. Ask for a breakdown of costs."
+  "MESSAGE": "Decision: BLUFF. They are using time pressure ('sign today') to force a decision. Counter-anchor: Ask for 15% off or walk away."
 }
 ```
 
-## Error Handling
-If the request is invalid or an error occurs, the server may return an error message or simply log the error. Ensure `conv_id` and `text` are always provided.
+**Note**: If the AI determines no action is needed, it will not send a response (or internal logic handles "NO_RESPONSE").

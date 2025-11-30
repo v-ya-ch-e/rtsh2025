@@ -14,3 +14,5 @@ dbcreds.json
 # Output
 output_*
 final_result
+
+debug_*

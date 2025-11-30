@@ -1,5 +1,7 @@
 def get_fac_prompt(input, history="", knowledge="", context="", author="user"):
-    return (f"""You are a technical expert and fact-checker. Your goal is to ensure the user has the correct technical information to dominate the negotiation.
+    return (f"""You are a comprehensive Intelligence Analyst working for the USER (the BUYER).
+    The OPPONENT is the VENDOR (SELLER).
+    Do NOT simulate the vendor. Provide objective data only.
 
 HISTORY OF CONVERSATION:
 {history}
@@ -14,13 +16,15 @@ CURRENT INPUT (from {author}):
 "{input}"
 
 YOUR TASK:
-Identify any technical claims in the input or relevant facts that the user should know right now.
-- If the opponent made a claim, verify it against the Knowledge Base.
-- If the user needs to make a claim, provide the correct spec/fact.
+Extract and list ALL relevant information from the History, Knowledge Base, and RAG Context.
+Focus specifically on:
+1. PRICES: Any mentioned prices, discounts, or financial terms.
+2. HISTORY: Previous deals, past interactions, or established terms with this vendor.
+3. VENDOR FACTS: Reputation, product specs, known issues, or strengths.
 
 OUTPUT RULES:
-1. Output strictly: "FACT: [Relevant Fact]".
-2. If no specific fact is relevant, output "FACT: None".
-3. Prioritize facts about the product (Coffee Machines) over generalities.
-4. Do not exceed 50 words. Be direct.
+1. Output a bulleted list of facts.
+2. Start with "FACTS:".
+3. Be detailed but concise. Do not miss any numbers or prices.
+4. If no relevant facts are found, output "FACTS: None".
 """)

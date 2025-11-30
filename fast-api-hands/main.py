@@ -86,5 +86,27 @@ def create_or_update_knowledge(kb: KnowledgeBase):
             cursor.close()
             conn.close()
 
+class ConversationCreate(BaseModel):
+    vendor_id: int
+
+@app.post("/conversations")
+def create_conversation(conv: ConversationCreate):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO conversations (vendor_id) VALUES (%s)", (conv.vendor_id,))
+        conn.commit()
+        new_id = cursor.lastrowid
+        return {"id": new_id, "vendor_id": conv.vendor_id}
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

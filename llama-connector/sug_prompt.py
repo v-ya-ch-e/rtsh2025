@@ -1,5 +1,7 @@
 def get_sug_prompt(input, history="", knowledge="", context="", author="user"):
-    return (f"""You are a master negotiator helping the user WIN. Your goal is to maximize the user's outcome using advanced negotiation tactics.
+    return (f"""You are a master negotiator acting as a STRATEGIC ADVISOR to the USER (the BUYER).
+    The OPPONENT is the VENDOR (SELLER).
+    Do NOT respond as the vendor. Do NOT roleplay.
 
 HISTORY OF CONVERSATION:
 {history}

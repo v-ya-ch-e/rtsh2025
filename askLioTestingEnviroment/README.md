@@ -1,37 +1,37 @@
 # AskLio Simulation Environment
 
-This directory contains a simulation environment that orchestrates a negotiation between a User, the AskLio API (acting as a Vendor), and the Llama Connector (acting as an AI Assistant).
+The **Simulation Environment** is a testing suite designed to validate the `rtsh2025` negotiation assistant. It simulates a chat between a User and a Vendor, with the AI Assistant providing real-time advice.
 
 ## Components
 
-- **`simulation_server.py`**: A WebSocket server (Port 8768) that manages the message flow.
-- **`index.html`**: A web frontend for visualizing the chat and AI hints.
-- **`requirements.txt`**: Python dependencies.
+1.  **Simulation Server (`simulation_server.py`)**:
+    - Runs on port `8768`.
+    - Acts as a WebSocket proxy/orchestrator.
+    - Hosts the web frontend (`index.html`).
+    - Simulates the Vendor using the AskLio API (or mock).
+    - Connects to the `llama-connector` to get AI advice.
 
-## Architecture
+2.  **Frontend (`index.html`)**:
+    - A web-based chat interface.
+    - Displays User messages (Right), Vendor messages (Left), and AI Hints (Top/Side).
 
-1.  **User** sends a message via `index.html`.
-2.  **Server** forwards it to:
-    - **AskLio API**: To get the vendor's response.
-    - **Llama Connector**: To get real-time analysis/hints for the user.
-3.  **Server** sends responses back to `index.html` as they arrive.
+## Setup
 
-## Prerequisites
+1.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-- **Llama Connector**: Must be running on port 8767 (or configured URI).
-- **AskLio API**: Accessible via internet.
-
-## Usage
-
-1.  **Start the Server**:
+2.  **Run**:
     ```bash
     python3 simulation_server.py
     ```
 
-2.  **Connect Client**:
-    - Connect your existing frontend to `ws://<server-ip>:8768`.
-    - Or use the provided `test_simulation_client.py`.
+3.  **Access**:
+    - Open `http://localhost:8768/` in your browser.
 
-3.  **Visualize Negotiation**:
-    - Open `http://<server-ip>:8768/` in your browser.
-    - This page shows the live conversation and AI hints in real-time.
+## Usage
+
+1.  Type a message in the chat box (e.g., "Hello, I want to buy 10 desks").
+2.  The **Vendor** (simulated) will reply.
+3.  The **AI Assistant** (`llama-connector`) will analyze the exchange and provide a **Hint** (colored card) if it has advice.

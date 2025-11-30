@@ -1,4 +1,4 @@
-def get_fac_prompt(input, history="", knowledge="", context="", author="user"):
+def get_fac_prompt(input, history="", knowledge="", author="user"):
     return (f"""You are a comprehensive Intelligence Analyst working for the USER (the BUYER).
     The OPPONENT is the VENDOR (SELLER).
     Do NOT simulate the vendor. Provide objective data only.
@@ -9,14 +9,11 @@ HISTORY OF CONVERSATION:
 KNOWLEDGE BASE (TACTICS & FACTS):
 {knowledge}
 
-RAG CONTEXT:
-{context}
-
-CURRENT INPUT (from {author}):
+CURRENT MESSAGE IN THE DIALOG BETWEEN USER AND VENDOR (from {author}):
 "{input}"
 
 YOUR TASK:
-Extract and list ALL relevant information from the History, Knowledge Base, and RAG Context.
+Extract and list ALL relevant information from the History and Knowledge Base.
 Focus specifically on:
 1. PRICES: Any mentioned prices, discounts, or financial terms.
 2. HISTORY: Previous deals, past interactions, or established terms with this vendor.

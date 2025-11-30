@@ -9,23 +9,15 @@ NEGOTIATION_TACTICS = """
 7. **The F-Word (Fair)**: "I want you to feel like you are being treated fairly at all times. Please stop me if you feel I'm being unfair."
 """
 
-COFFEE_FACTS = """
-1. **Victoria Arduino**: A heritage Italian brand (since 1905). Known for the "Black Eagle" machine used in the World Barista Championship.
-2. **Temperature Stability**: Critical for espresso. T3 technology (in Victoria Arduino) allows control of steam, water, and group head temperature independently.
-3. **Pressure Profiling**: The ability to vary pressure during extraction. Helps unlock different flavor profiles from the same bean.
-4. **Gravimetrics**: Weighing the liquid in the cup rather than just timing the shot. Ensures consistency.
-5. **Maintenance**: Commercial machines need daily backflushing and regular descaling. Water filtration is mandatory to prevent scale.
-6. **Grinder**: The grinder is more important than the machine. A consistent grind size is key to good extraction.
-"""
-
 import aiomysql
 
 async def get_relevant_knowledge(pool, company_id):
+    return f"TACTICS:\n{NEGOTIATION_TACTICS}\n"
     """
     Returns relevant knowledge for the company from the database.
     """
     if not pool:
-        return f"TACTICS:\n{NEGOTIATION_TACTICS}\n\nFACTS:\n{COFFEE_FACTS}"
+        return f"TACTICS:\n{NEGOTIATION_TACTICS}\n"
     
     try:
         async with pool.acquire() as conn:
@@ -38,4 +30,4 @@ async def get_relevant_knowledge(pool, company_id):
         print(f"Error fetching knowledge base: {e}")
     
     # Fallback
-    return f"TACTICS:\n{NEGOTIATION_TACTICS}\n\nFACTS:\n{COFFEE_FACTS}"
+    return f"TACTICS:\n{NEGOTIATION_TACTICS}\n"

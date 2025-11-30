@@ -114,9 +114,6 @@ async def ask_llm(client, prompt):
 
 import sys
 import os
-# Add parent directory to sys.path to allow importing RAG_helper
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# from RAG_helper.processQuery import processQuery
 import knowledge_base
 
 async def get_history(conv_id, limit=10):
@@ -147,21 +144,12 @@ async def process_text(input_text, conv_id, company_id, author):
     
     # 2. Get Knowledge
     knowledge = await knowledge_base.get_relevant_knowledge(db_pool, company_id)
-    
-    # 3. Retrieve context from RAG (optional, keeping it as is)
-    context = ""
-    # context = await asyncio.to_thread(processQuery, input_text, company_id)
-    # if context:
-    #     print(f"Retrieved context (len={len(context)})")
-    # else:
-    #     print("No context retrieved")
 
     # Run all requests in parallel using the same Bedrock client
-    # Note: Updated prompt functions to accept history and knowledge
     results = await asyncio.gather(
-        ask_llm(bedrock_runtime, get_sus_prompt(input_text, history, knowledge, context, author)),
-        ask_llm(bedrock_runtime, get_sug_prompt(input_text, history, knowledge, context, author)),
-        ask_llm(bedrock_runtime, get_fac_prompt(input_text, history, knowledge, context, author))
+        ask_llm(bedrock_runtime, get_sus_prompt(input_text, history, knowledge, author)),
+        ask_llm(bedrock_runtime, get_sug_prompt(input_text, history, knowledge, author)),
+        ask_llm(bedrock_runtime, get_fac_prompt(input_text, history, knowledge, author))
     )
 
     response_sus, response_sug, response_fac = results
@@ -172,7 +160,7 @@ async def process_text(input_text, conv_id, company_id, author):
     for attempt in range(max_retries):
         print(f"Generating final result (Attempt {attempt + 1}/{max_retries})...")
         final_result_list = await asyncio.gather(
-            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, history, context, author))
+            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, history, author))
         )
         raw_result = final_result_list[0]
         
@@ -208,6 +196,14 @@ async def process_text(input_text, conv_id, company_id, author):
             "MESSAGE": "Error: Could not generate a valid response."
         }
     
+    # Save the hint to the database
+    hint_text = final_result_json.get("MESSAGE", "")
+    if hint_text and hint_text != "NO_RESPONSE":
+        asyncio.create_task(save_to_db(conv_id, hint_text, "hint"))
+
+    if hint_text == "NO_RESPONSE":
+        return None
+
     return json.dumps(final_result_json)
 
 
@@ -232,8 +228,11 @@ async def handler(websocket):
                 asyncio.create_task(save_to_db(conv_id, input_text, author))
                 
                 response = await process_text(input_text, conv_id, company_id, author)
-                await websocket.send(response)
-                print("Sent response")
+                if response:
+                    await websocket.send(response)
+                    print("Sent response")
+                else:
+                    print("No response generated (NO_RESPONSE)")
                 
             except json.JSONDecodeError:
                 print("Received invalid JSON")

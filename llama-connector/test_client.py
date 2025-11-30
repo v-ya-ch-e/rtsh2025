@@ -14,7 +14,9 @@ async def hello():
         # Send JSON object
         message = {
             "conv_id": 1,
-            "text": input_text
+            "text": input_text,
+            "company_id": 1,
+            "author": "opponent"
         }
         
         print(f"Sending message: {json.dumps(message)[:50]}...")

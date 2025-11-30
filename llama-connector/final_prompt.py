@@ -1,9 +1,9 @@
-
-def get_final_prompt(input, sus, sug, fac):
+def get_final_prompt(input, sus, sug, fac, context="", author="user"):
     return (('You are a master negotiator who gives recommendations to a human-negotiator. You have three helpers: the first one is checking if the opponent tries to bluff, the second one trying to suggest next moves and the third one trying to find real-time facts about the topic of discussion. You need to decide which of the messages to give to user. The message you pick must be the most relevant at this point of discussion. You also get a part of text transcript of the actual conversation [look Input Text].'
-             '\nInput Text: \n----------------\n"')+
+             f'\nInput Text (from {author}): \n----------------\n"')+
             input+
             ('"\n----------------\n'
+             '\nCONTEXT FROM KNOWLEDGE BASE:\n' + context + '\n'
              '\nMessages from helpers: '
              '\nBLUFF HELPER: '+sus+
              '\nSUGGESTION HELPER: '+sug+

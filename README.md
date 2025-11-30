@@ -1,10 +1,10 @@
-# Sekundant (formerly rtsh2025)
+# Sekundant (backend) (formerly rtsh2025)
 
 **Sekundant** is a comprehensive, real-time negotiation assistant designed to help buyers secure the best deals. It leverages advanced AI (Claude 3 Haiku & Sonnet via AWS Bedrock) to analyze conversations, detect manipulative tactics, verify facts, and provide strategic, actionable advice in real-time.
 
 ## Architecture
 
-The system is composed of three microservices:
+The backend-system is composed of three microservices:
 
 1.  **Llama Connector (`llama-connector/`)**:
     - **Role**: The "Brain". Handles AI logic, prompt engineering, and AWS Bedrock integration.
@@ -15,11 +15,18 @@ The system is composed of three microservices:
     - **Role**: The "Backbone". Manages data, storage, and API endpoints.
     - **Tech**: FastAPI (Port 8000), MySQL.
     - **Key Features**: Company management, Document storage, Keyword management, Conversation tracking, Conversation Summarization.
+    - **Docs**: http://3.67.9.62:8000/docs#/
+      
+    ![IMAGE 2025-11-30 12:02:48](https://github.com/user-attachments/assets/6851d073-27fb-4432-818e-48d9647a95b3)
 
 3.  **Simulation Environment (`askLioTestingEnviroment/`)**:
     - **Role**: The "Playground". A testing suite for validating the AI.
     - **Tech**: Python, WebSocket (Port 8768), HTML/JS Frontend.
     - **Key Features**: Simulated chat interface, Real-time visualization of AI hints.
+    - **Try it out**: http://3.67.9.62:8768/
+      
+    ![IMAGE 2025-11-30 12:02:32](https://github.com/user-attachments/assets/ae8fa43a-3d48-4261-aaa9-e7bd4da07f10)
+
 
 ## Key Features
 

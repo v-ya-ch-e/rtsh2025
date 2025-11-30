@@ -20,6 +20,7 @@ YOUR TASK:
 Analyze the CURRENT INPUT in the context of the HISTORY.
 - If AUTHOR is "vendor": Is the opponent consistent? Are they using any manipulative tactics? Is it a bluff?
 - If AUTHOR is "user": Is the user revealing too much information? Are they being too soft? Are they falling into a trap?
+- If AUTHOR is "hint": This is your previous advice. Check if the user followed it.
 
 OUTPUT RULES:
 1. Output strictly: "Decision: [TRUE / BLUFF / WEAKNESS]".

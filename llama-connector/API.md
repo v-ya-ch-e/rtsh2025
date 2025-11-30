@@ -12,7 +12,7 @@ The client sends a JSON object with the following fields:
 | :--- | :--- | :--- | :--- |
 | `conv_id` | Integer | Yes | Unique identifier for the conversation. |
 | `text` | String | Yes | The text message to analyze. |
-| `company_id` | Integer | No | ID of the company for RAG context (default: 1). |
+| `company_id` | Integer | No | ID of the company for context retrieval (default: 1). |
 | `author` | String | No | Who sent the text: `"user"` (Buyer) or `"vendor"` (Seller) (default: `"user"`). |
 
 **Example:**
@@ -54,9 +54,23 @@ Creates a new conversation.
 - **Body**: `{"vendor_id": int}`
 - **Response**: `{"id": int, "vendor_id": int}`
 
-#### `GET /knowledge/{company_id}`
-Retrieves the knowledge base for a specific company.
+#### `GET /companies/{id}/documents`
+Returns a list of uploaded documents for a company.
 
-#### `POST /knowledge`
-Creates or updates a knowledge base.
-- **Body**: `{"company_id": int, "content": "string"}`
+#### `POST /companies/{id}/documents`
+Uploads a document for a company.
+- **Form Data**: `file`
+
+#### `GET /companies/{id}/context`
+Retrieves the context file content.
+
+#### `POST /companies/{id}/context`
+Updates the context file content.
+- **Body**: `string` (text/plain)
+
+#### `GET /companies/{id}/knowledge_file`
+Retrieves the knowledge base file content.
+
+#### `POST /companies/{id}/knowledge_file`
+Updates the knowledge base file content.
+- **Body**: `string` (text/plain)

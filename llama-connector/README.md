@@ -10,7 +10,8 @@ This project implements a real-time negotiation assistant server using AWS Bedro
 - **JSON Output**: Returns structured JSON responses (`MESSAGE_COLOR`, `MESSAGE`).
 - **Retry Logic**: Automatically retries if the LLM fails to generate valid JSON.
 - **Author Awareness**: Distinguishes between **User (Buyer)** and **Vendor (Seller)** to provide targeted advice.
-- **Dynamic Knowledge Base**: Fetches company-specific tactics and facts from the database.
+- **Dynamic Knowledge Base**: Fetches company-specific tactics and facts from the Local Storage API.
+- **Context Retrieval**: Fetches relevant context from the Local Storage API.
 - **Conversation Tracking**: Supports creating and tracking conversations via a dedicated API.
 
 ## Prerequisites

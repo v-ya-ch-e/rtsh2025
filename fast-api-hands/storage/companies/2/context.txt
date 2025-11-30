@@ -1,0 +1,13 @@
+# Products (Source: SmartDesk Pro Specs)
+- **SmartDesk Pro**: Dual-motor, 120kg lift, <45dB noise.
+- **Price**: $800 (Single) / $700 (Bulk 20+).
+- **Warranty**: 5 Years (Frame/Motors), 2 Years (Electronics).
+
+# Services
+- **Installation**: $50/unit. Waived for orders of 20+.
+- **Workspace Analytics**: Software add-on (referenced in Case Study).
+
+# Proof Points (Source: TechCorp Case Study)
+- **ROI**: 350% first year.
+- **Health**: Reduced absenteeism by 40%.
+- **Productivity**: +15%.

@@ -1,0 +1,12 @@
+# Services (Source: AI Whitepaper)
+- **AI Prediction Engine**: "SandStorm" model, 94% accuracy.
+- **Pricing**: $50k/yr license + $10k setup.
+- **Incentive**: 20% discount for 3-year commit ($40k/yr).
+
+# SLA Terms (Source: SLA v4.0)
+- **Standard**: 99.9% uptime, <4h response.
+- **Enterprise**: 99.99% uptime, <1h response.
+- **Penalties**: Credits up to 25% if SLA breached.
+
+# Legal
+- **Indemnification**: Capped at 12 months fees. NO unlimited indemnification.

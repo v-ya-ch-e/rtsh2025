@@ -4,7 +4,7 @@ def get_final_prompt(input, sus, sug, fac, history="", context="", author="user"
     Address the USER directly. Do NOT speak to the vendor.
 Your job is to decide the SINGLE most important thing to tell the user RIGHT NOW to help them win.
 
-HISTORY OF CONVERSATION:
+HISTORY OF CONVERSATION (includes 'hint' messages, which are your past advice):
 {history}
 
 ANALYSIS:

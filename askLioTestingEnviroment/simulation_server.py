@@ -14,19 +14,18 @@ SIMULATION_PORT = 8768
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SimulationServer")
 
-# HTML Template for Visualizer
+# HTML Template for Integrated Chat
 VISUALIZER_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Negotiation Visualizer</title>
+    <title>Negotiation Simulation</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; }
-        #container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
-        h1 { text-align: center; color: #333; padding: 20px; margin: 0; border-bottom: 1px solid #eee; }
-        #messages { padding: 20px; height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; display: flex; height: 100vh; box-sizing: border-box; }
+        #chat-container { flex: 2; display: flex; flex-direction: column; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-right: 20px; overflow: hidden; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .message-row { display: flex; flex-direction: column; }
         .message-row.user { align-items: flex-end; }
         .message-row.vendor { align-items: flex-start; }
@@ -34,55 +33,111 @@ VISUALIZER_HTML = """
         .user .bubble { background-color: #0084ff; color: white; border-bottom-right-radius: 4px; }
         .vendor .bubble { background-color: #e4e6eb; color: black; border-bottom-left-radius: 4px; }
         .author-label { font-size: 0.75rem; color: #65676b; margin-bottom: 4px; margin-left: 4px; margin-right: 4px; }
-        .hint-box { margin-top: 5px; padding: 10px; border-radius: 8px; font-size: 0.9rem; max-width: 70%; border-left: 4px solid #ccc; background-color: #f9f9f9; }
-        .hint-box.red { border-left-color: #ff4d4d; background-color: #fff0f0; }
-        .hint-box.green { border-left-color: #4caf50; background-color: #f0fff0; }
-        .hint-box.yellow { border-left-color: #ffc107; background-color: #fffff0; }
-        .hint-title { font-weight: bold; margin-bottom: 2px; font-size: 0.8rem; color: #555; }
+        
+        #input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; background: #fff; }
+        #message-input { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 1rem; }
+        #send-btn { padding: 10px 25px; background-color: #0084ff; color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        #send-btn:hover { background-color: #0073e6; }
+        
+        #hints-container { flex: 1; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .hint-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; border-left: 5px solid gray; }
+        .hint-card.red { border-left-color: #ff4d4d; background-color: #fff0f0; }
+        .hint-card.green { border-left-color: #4caf50; background-color: #f0fff0; }
+        .hint-card.yellow { border-left-color: #ffc107; background-color: #fffff0; }
+        .hint-title { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div id="container">
-        <h1>Live Negotiation</h1>
-        <div id="messages"></div>
+
+<div id="chat-container">
+    <div id="messages"></div>
+    <div id="input-area">
+        <input type="text" id="message-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+        <button id="send-btn" onclick="sendMessage()">Send</button>
     </div>
+</div>
 
-    <script>
-        const messagesDiv = document.getElementById("messages");
-        const evtSource = new EventSource("/events");
+<div id="hints-container">
+    <h3>AI Analysis & Hints</h3>
+    <div id="hints-list"></div>
+</div>
 
-        evtSource.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            if (data.type === 'history') {
-                messagesDiv.innerHTML = '';
-                data.messages.forEach(msg => addMessageToUI(msg));
-            } else if (data.type === 'new_message') {
-                addMessageToUI(data.message);
-            }
-        };
+<script>
+    const ws = new WebSocket("ws://" + window.location.host);
+    const messagesDiv = document.getElementById("messages");
+    const hintsDiv = document.getElementById("hints-list");
+    const input = document.getElementById("message-input");
 
-        function addMessageToUI(msg) {
-            const row = document.createElement("div");
-            row.className = `message-row ${msg.author === 'user' ? 'user' : 'vendor'}`;
-            
-            let html = `<div class="author-label">${msg.author === 'user' ? 'User' : 'Vendor'}</div>`;
-            html += `<div class="bubble">${msg.text}</div>`;
-            
-            if (msg.hint) {
-                const color = msg.hint.MESSAGE_COLOR || "gray";
-                html += `
-                    <div class="hint-box ${color}">
-                        <div class="hint-title">AI Analysis</div>
-                        ${msg.hint.MESSAGE}
-                    </div>
-                `;
-            }
-            
-            row.innerHTML = html;
-            messagesDiv.appendChild(row);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    ws.onopen = () => {
+        addSystemMessage("Connected to Simulation Server");
+    };
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === "system") {
+            addSystemMessage(data.content);
+        } else if (data.type === "message") {
+            addMessage(data.text, data.author);
+        } else if (data.type === "hint") {
+            addHint(data.data, data.author);
         }
-    </script>
+    };
+
+    function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+        
+        // Display user message immediately
+        addMessage(text, "user");
+        
+        // Send to server
+        ws.send(JSON.stringify({ text: text }));
+        input.value = "";
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === "Enter") sendMessage();
+    }
+
+    function addMessage(text, author) {
+        const row = document.createElement("div");
+        row.className = `message-row ${author}`;
+        
+        let html = `<div class="author-label">${author === 'user' ? 'You' : 'Vendor'}</div>`;
+        html += `<div class="bubble">${text}</div>`;
+        
+        row.innerHTML = html;
+        messagesDiv.appendChild(row);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function addSystemMessage(text) {
+        const div = document.createElement("div");
+        div.style.textAlign = "center";
+        div.style.color = "#888";
+        div.style.fontSize = "0.8em";
+        div.style.margin = "10px 0";
+        div.innerText = text;
+        messagesDiv.appendChild(div);
+    }
+
+    function addHint(data, author) {
+        const div = document.createElement("div");
+        const color = data.MESSAGE_COLOR || "gray";
+        div.className = `hint-card ${color}`;
+        
+        const title = author === 'user' ? "Analysis of your message" : "Analysis of Vendor's message";
+        
+        div.innerHTML = `
+            <div class="hint-title">${title}</div>
+            <div>${data.MESSAGE}</div>
+        `;
+        hintsDiv.insertBefore(div, hintsDiv.firstChild);
+    }
+</script>
+
 </body>
 </html>
 """
@@ -91,8 +146,6 @@ class SimulationServer:
     def __init__(self):
         self.conversation_id = None
         self.vendor_id = None
-        self.history = [] # List of {author, text, hint}
-        self.sse_queues = set()
 
     async def init_asklio(self):
         """Initialize conversation with AskLio"""
@@ -107,7 +160,7 @@ class SimulationServer:
                 if not vendors:
                     logger.error("No vendors found")
                     return False
-                self.vendor_id = vendors[0]["id"]
+                self.vendor_id = vendors[5]["id"]
 
             # 2. Create conversation
             async with session.post(
@@ -154,48 +207,12 @@ class SimulationServer:
             logger.error(f"Llama connection error: {e}")
             return {"MESSAGE_COLOR": "gray", "MESSAGE": "Llama unavailable"}
 
-    async def broadcast_update(self, message_obj):
-        """Send update to all SSE clients"""
-        self.history.append(message_obj)
-        data = json.dumps({"type": "new_message", "message": message_obj})
-        for queue in self.sse_queues:
-            await queue.put(data)
-
     async def index_handler(self, request):
         # Check for WebSocket upgrade
         if request.headers.get("Upgrade", "").lower() == "websocket":
             return await self.websocket_handler(request)
-        # Otherwise serve Visualizer
+        # Otherwise serve Integrated Chat
         return web.Response(text=VISUALIZER_HTML, content_type='text/html')
-
-    async def sse_handler(self, request):
-        response = web.StreamResponse(
-            status=200,
-            reason='OK',
-            headers={
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-            }
-        )
-        await response.prepare(request)
-        
-        queue = asyncio.Queue()
-        self.sse_queues.add(queue)
-        
-        try:
-            # Send history first
-            await response.write(f"data: {json.dumps({'type': 'history', 'messages': self.history})}\\n\\n".encode('utf-8'))
-            
-            while True:
-                data = await queue.get()
-                await response.write(f"data: {data}\\n\\n".encode('utf-8'))
-        except Exception as e:
-            logger.info(f"SSE connection closed: {e}")
-        finally:
-            self.sse_queues.remove(queue)
-        
-        return response
 
     async def websocket_handler(self, request):
         ws = web.WebSocketResponse()
@@ -220,14 +237,7 @@ class SimulationServer:
                     # 1. Process User Message
                     llama_res_user = await self.get_llama_hint(user_text, "user")
                     
-                    user_msg_obj = {
-                        "author": "user",
-                        "text": user_text,
-                        "hint": llama_res_user
-                    }
-                    await self.broadcast_update(user_msg_obj)
-                    
-                    # Send hint back to WS client (optional, but good for consistency)
+                    # Send hint back to WS client
                     await ws.send_json({"type": "hint", "author": "user", "data": llama_res_user})
 
                     # 2. Send to AskLio
@@ -236,13 +246,6 @@ class SimulationServer:
                     if vendor_text:
                         # 3. Process Vendor Message
                         llama_res_vendor = await self.get_llama_hint(vendor_text, "opponent")
-                        
-                        vendor_msg_obj = {
-                            "author": "vendor",
-                            "text": vendor_text,
-                            "hint": llama_res_vendor
-                        }
-                        await self.broadcast_update(vendor_msg_obj)
                         
                         # Send to WS client
                         await ws.send_json({"type": "message", "author": "vendor", "text": vendor_text})
@@ -259,7 +262,6 @@ class SimulationServer:
     def run(self):
         app = web.Application()
         app.router.add_get('/', self.index_handler)
-        app.router.add_get('/events', self.sse_handler)
         
         logger.info(f"Simulation server running on port {SIMULATION_PORT}")
         web.run_app(app, port=SIMULATION_PORT)

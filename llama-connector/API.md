@@ -1,4 +1,4 @@
-# Llama Connector API
+# Sekundant - Llama Connector API
 
 The Llama Connector exposes a WebSocket API on port `8767`.
 

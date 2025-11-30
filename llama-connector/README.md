@@ -1,6 +1,6 @@
-# Llama Connector
+# Sekundant - Llama Connector
 
-The **Llama Connector** is the core AI logic server for the `rtsh2025` negotiation assistant. It connects to **AWS Bedrock** (Claude 3 Haiku) to analyze negotiation conversations in real-time and provides strategic advice to the user.
+The **Llama Connector** is the core AI logic server for the **Sekundant** negotiation assistant. It connects to **AWS Bedrock** (Claude 3 Haiku) to analyze negotiation conversations in real-time and provides strategic advice to the user.
 
 ## Features
 

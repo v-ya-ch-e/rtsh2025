@@ -1,6 +1,6 @@
-# AskLio Simulation Environment
+# Sekundant - Simulation Environment
 
-The **Simulation Environment** is a testing suite designed to validate the `rtsh2025` negotiation assistant. It simulates a chat between a User and a Vendor, with the AI Assistant providing real-time advice.
+The **Simulation Environment** is a testing suite designed to validate the **Sekundant** negotiation assistant. It simulates a chat between a User and a Vendor, with the AI Assistant providing real-time advice.
 
 ## Components
 

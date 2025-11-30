@@ -1,4 +1,4 @@
-# Llama Connector Deployment Guide
+# Sekundant - Llama Connector Deployment Guide
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ It is recommended to run the service using `systemd` for production.
 
 ```ini
 [Unit]
-Description=Llama Connector WebSocket Server
+Description=Sekundant Llama Connector WebSocket Server
 After=network.target
 
 [Service]

@@ -120,6 +120,7 @@ def create_conversation(conv: ConversationCreate):
 from fastapi import UploadFile, File
 import shutil
 import os
+import json
 
 UPLOAD_DIR = "uploads"
 if not os.path.exists(UPLOAD_DIR):
@@ -211,6 +212,30 @@ def save_company_knowledge_file(company_id: int, content: str = Body(..., media_
     with open(path, "w") as f:
         f.write(content)
     return {"message": "Knowledge saved"}
+
+KEYWORDS_FILE = os.path.join(STORAGE_DIR, "all_keywords.json")
+
+def get_all_keywords():
+    if os.path.exists(KEYWORDS_FILE):
+        with open(KEYWORDS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_all_keywords(data):
+    with open(KEYWORDS_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+@app.get("/companies/{company_id}/keywords")
+def get_company_keywords(company_id: int):
+    data = get_all_keywords()
+    return {"keywords": data.get(str(company_id), "")}
+
+@app.post("/companies/{company_id}/keywords")
+def save_company_keywords(company_id: int, keywords: str = Body(..., media_type="text/plain")):
+    data = get_all_keywords()
+    data[str(company_id)] = keywords.strip()
+    save_all_keywords(data)
+    return {"message": "Keywords saved"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

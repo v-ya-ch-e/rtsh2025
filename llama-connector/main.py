@@ -74,6 +74,7 @@ async def ask_llm(client, prompt):
     body = json.dumps({
         "anthropic_version": "bedrock-2023-05-31",
         "max_tokens": 256,
+        "system": "You are a specialized negotiation assistant. Your goal is to help the user WIN. Be concise, strategic, and direct.",
         "messages": [
             {
                 "role": "user",
@@ -85,7 +86,7 @@ async def ask_llm(client, prompt):
                 ]
             }
         ],
-        "temperature": 0.0
+        "temperature": 0.1
     })
 
     try:
@@ -115,7 +116,6 @@ async def ask_llm(client, prompt):
 
 import sys
 import os
-import knowledge_base
 
 async def get_history(conv_id, limit=10):
     if not db_pool:
@@ -143,34 +143,24 @@ async def process_text(input_text, conv_id, company_id, author):
     # 1. Get History
     history = await get_history(conv_id)
     
-    # 2. Get Knowledge
-    knowledge = await knowledge_base.get_relevant_knowledge(db_pool, company_id)
-    
-    # 3. Retrieve context from Local Storage API
-    context = ""
+    # 2. Get Keywords (Merged Context & Knowledge)
+    keywords = ""
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"http://localhost:8000/companies/{company_id}/context") as resp:
+            async with session.get(f"http://localhost:8000/companies/{company_id}/keywords") as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    context = data.get("content", "")
-                    if context:
-                        print(f"Retrieved context (len={len(context)})")
+                    keywords = data.get("keywords", "")
+                    if keywords:
+                        print(f"Retrieved keywords (len={len(keywords)})")
     except Exception as e:
-        print(f"Error fetching context from API: {e}")
-
-    # context = await asyncio.to_thread(processQuery, input_text, company_id)
-    # if context:
-    #     print(f"Retrieved context (len={len(context)})")
-    # else:
-    #     print("No context retrieved")
+        print(f"Error fetching keywords from API: {e}")
 
     # Run all requests in parallel using the same Bedrock client
-    # Note: Updated prompt functions to accept history and knowledge
     results = await asyncio.gather(
-        ask_llm(bedrock_runtime, get_sus_prompt(input_text, history, knowledge, context, author)),
-        ask_llm(bedrock_runtime, get_sug_prompt(input_text, history, knowledge, context, author)),
-        ask_llm(bedrock_runtime, get_fac_prompt(input_text, history, knowledge, context, author))
+        ask_llm(bedrock_runtime, get_sus_prompt(input_text, history, keywords, author)),
+        ask_llm(bedrock_runtime, get_sug_prompt(input_text, history, keywords, author)),
+        ask_llm(bedrock_runtime, get_fac_prompt(input_text, history, keywords, author))
     )
 
     response_sus, response_sug, response_fac = results
@@ -181,7 +171,7 @@ async def process_text(input_text, conv_id, company_id, author):
     for attempt in range(max_retries):
         print(f"Generating final result (Attempt {attempt + 1}/{max_retries})...")
         final_result_list = await asyncio.gather(
-            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, history, context, author))
+            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, history, author))
         )
         raw_result = final_result_list[0]
         
@@ -219,8 +209,11 @@ async def process_text(input_text, conv_id, company_id, author):
     
     # Save the hint to the database
     hint_text = final_result_json.get("MESSAGE", "")
-    if hint_text:
+    if hint_text and hint_text != "NO_RESPONSE":
         asyncio.create_task(save_to_db(conv_id, hint_text, "hint"))
+
+    if hint_text == "NO_RESPONSE":
+        return None
 
     return json.dumps(final_result_json)
 
@@ -246,8 +239,11 @@ async def handler(websocket):
                 asyncio.create_task(save_to_db(conv_id, input_text, author))
                 
                 response = await process_text(input_text, conv_id, company_id, author)
-                await websocket.send(response)
-                print("Sent response")
+                if response:
+                    await websocket.send(response)
+                    print("Sent response")
+                else:
+                    print("No response generated (NO_RESPONSE)")
                 
             except json.JSONDecodeError:
                 print("Received invalid JSON")

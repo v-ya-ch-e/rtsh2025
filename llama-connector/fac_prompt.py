@@ -1,33 +1,20 @@
-def get_fac_prompt(input, history="", knowledge="", context="", author="user"):
-    return (f"""You are a comprehensive Intelligence Analyst working for the USER (the BUYER).
-    The OPPONENT is the VENDOR (SELLER).
-    Do NOT simulate the vendor. Provide objective data only.
+def get_fac_prompt(input, history="", keywords="", author="user"):
+    return (f"""TASK:
+List ONLY facts relevant to INPUT.
+1. PRICES/SPECS.
+2. Verify Vendor claims.
+3. Check User facts.
+4. Ignore Hints.
 
-HISTORY OF CONVERSATION:
+OUTPUT FORMAT:
+1. Bulleted list starting "FACTS:".
+2. If none, "FACTS: None".
+
+HISTORY:
 {history}
 
-KNOWLEDGE BASE (TACTICS & FACTS):
-{knowledge}
+INPUT ({author}): "{input}"
 
-RAG CONTEXT:
-{context}
-
-CURRENT INPUT (from {author}):
-"{input}"
-
-YOUR TASK:
-Extract and list ONLY facts that are relevant to the CURRENT input.
-Focus specifically on:
-1. PRICES: Any mentioned prices, discounts, or financial terms.
-2. If AUTHOR is "vendor": Verify their claims against the KNOWLEDGE BASE. Are the prices/specs correct?
-3. If AUTHOR is "user": Are they stating facts correctly?
-4. If AUTHOR is "hint": Ignore for fact-checking purposes unless it contains previously retrieved facts.
-5. HISTORY: Previous deals, past interactions, or established terms with this vendor.
-6. VENDOR FACTS: Reputation, product specs, known issues, or strengths.
-
-OUTPUT RULES:
-1. Output a bulleted list of facts.
-2. Start with "FACTS:".
-3. Be detailed but concise. Do not miss any numbers or prices.
-4. If no relevant facts are found, output "FACTS: None".
+--- REFERENCE KEYWORDS (USE ONLY IF RELEVANT TO INPUT) ---
+{keywords}
 """)

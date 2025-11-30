@@ -7,7 +7,7 @@ import constants
 db_path = "/Users/zero_skill/Documents/context_company_1"
 db = chromadb.PersistentClient(path=db_path)
 chroma_collection = db.create_collection(
-    name="collection_dev_21",
+    name="collection_dev_22",
     embedding_function=OpenAIEmbeddingFunction(
         api_key=open("cred").read(),
         model_name="text-embedding-3-small"
@@ -22,6 +22,7 @@ chroma_collection = db.create_collection(
 print("Loading files... this may take a moment but happens only once.")
 reader = SimpleDirectoryReader("/Users/zero_skill/Documents/negotiation_info")
 documents = reader.load_data()
+
 llama_documents = list((documents[0].text).split("\n### "))
 #print(llama_documents[1])
 docs_text = []

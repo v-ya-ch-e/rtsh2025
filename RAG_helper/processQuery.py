@@ -60,4 +60,4 @@ def processQuery(query, company_id):
         return ""
 
 if __name__ == "__main__":
-    print(processQuery("product prices", 1))
+    print(processQuery("product prices", 2))

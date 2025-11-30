@@ -1,0 +1,13 @@
+[Unit]
+Description=AskLio Simulation Environment Server
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/rtsh2025/askLioTestingEnviroment
+ExecStart=/usr/bin/python3 simulation_server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

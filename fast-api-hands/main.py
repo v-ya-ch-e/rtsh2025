@@ -216,7 +216,7 @@ Include:
 4. Any specific tactical insights or warnings.
 
 OUTPUT FORMAT:
-Return a clear, well-structured summary in Markdown format.
+Return a clear, well-structured summary in Markdown format. The output should be ready to show to the end user (with out any of your thoughts)
 """
 
         body = json.dumps({

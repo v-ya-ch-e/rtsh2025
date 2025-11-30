@@ -9,7 +9,7 @@ def processQuery(query, company_id):
     db_path = "/Users/zero_skill/Documents/context_company_" + str(company_id)
     db = chromadb.PersistentClient(path=db_path)
     chroma_collection = db.get_collection(
-        name="collection_dev_0" + str(company_id),
+        name="collection_dev_2" + str(company_id),
         embedding_function=OpenAIEmbeddingFunction(
             api_key=open("cred").read(),
             model_name="text-embedding-3-small"

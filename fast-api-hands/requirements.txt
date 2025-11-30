@@ -2,3 +2,5 @@ fastapi
 uvicorn
 mysql-connector-python
 python-multipart
+boto3
+botocore[crt]

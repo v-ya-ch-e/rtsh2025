@@ -1,42 +1,50 @@
 # FastAPI Hands
 
-A simple FastAPI application to serve company data from a MySQL database.
+**FastAPI Hands** is the backend API and data storage service for the `rtsh2025` project. It manages company data, conversations, documents, and the unified keyword system.
 
 ## Features
 
-- **Companies Endpoint**: `GET /companies` retrieves all companies from the database.
+- **Company Management**: List companies (`GET /companies`).
+- **Conversation Tracking**: Create new conversations (`POST /conversations`).
+- **Unified Keyword System**:
+    - `GET /companies/{id}/keywords`: Retrieve the consolidated keyword string for a company.
+    - `POST /companies/{id}/keywords`: Update keywords.
+- **Document Management**:
+    - `POST /companies/{id}/documents`: Upload PDF/Doc files.
+    - `GET /companies/{id}/documents`: List uploaded documents.
+- **Legacy Storage**: Supports legacy `context` and `knowledge` file endpoints (migrated to keywords).
 
-## Prerequisites
+## Setup
 
-- Python 3.8+
-- MySQL Database with a `companies` table.
-
-## Installation
-
-1.  **Install dependencies**:
+1.  **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Configure Credentials**:
-    Ensure `dbcreds.py` is present in the directory with the following variables:
-    - `DB_HOST`
-    - `DB_PORT`
-    - `DB_USER`
-    - `DB_PASSWORD`
-    - `DB_NAME`
+2.  **Configure Database**:
+    - Ensure `dbcreds.py` is present (shared with `llama-connector` or created separately).
 
-## Usage
-
-1.  **Start the Server**:
+3.  **Run**:
     ```bash
     python3 main.py
     ```
-    The server will start on `http://0.0.0.0:8000`.
+    The server runs on `http://0.0.0.0:8000`.
 
-2.  **Access the Endpoint**:
-    Open your browser or use curl:
-    ```bash
-## Deployment
+## API Endpoints
 
-For detailed instructions on how to deploy this application to AWS EC2, please refer to [DEPLOYMENT.md](DEPLOYMENT.md).
+### Companies
+- `GET /companies`: List all companies.
+
+### Conversations
+- `POST /conversations`: Create a new conversation.
+    - Body: `{"vendor_id": int}`
+
+### Keywords (Unified Context)
+- `GET /companies/{id}/keywords`: Get keywords.
+- `POST /companies/{id}/keywords`: Save keywords.
+    - Body: `string` (text/plain)
+
+### Documents
+- `GET /companies/{id}/documents`: List documents.
+- `POST /companies/{id}/documents`: Upload document.
+    - Form Data: `file`

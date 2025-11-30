@@ -169,5 +169,92 @@ def get_documents(company_id: int):
             cursor.close()
             conn.close()
 
+import boto3
+import json
+
+# Initialize Bedrock Runtime Client
+# Region: eu-central-1 (Frankfurt)
+bedrock_runtime = boto3.client(
+    service_name='bedrock-runtime',
+    region_name='eu-central-1'
+)
+
+CLAUDE_SONNET_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+
+@app.get("/get_summary/{conv_id}")
+def get_conversation_summary(conv_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        # Fetch all messages for the conversation
+        cursor.execute("SELECT author, message FROM dialogs WHERE conv_id = %s ORDER BY message_id ASC", (conv_id,))
+        rows = cursor.fetchall()
+        
+        if not rows:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+            
+        # Format conversation history
+        history_str = ""
+        for row in rows:
+            history_str += f"{row['author'].upper()}: {row['message']}\n"
+            
+        # Construct prompt for Claude 3.5 Sonnet
+        prompt = f"""You are an expert negotiator and analyst.
+        
+CONVERSATION HISTORY:
+{history_str}
+
+YOUR TASK:
+Provide a comprehensive summary of this negotiation.
+Include:
+1. Key topics discussed.
+2. Offers and counter-offers made.
+3. The current state of the negotiation (agreed, stalled, ongoing).
+4. Any specific tactical insights or warnings.
+
+OUTPUT FORMAT:
+Return a clear, well-structured summary in Markdown format.
+"""
+
+        body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "temperature": 0.5
+        })
+        
+        response = bedrock_runtime.invoke_model(
+            body=body,
+            modelId=CLAUDE_SONNET_ID,
+            accept='application/json',
+            contentType='application/json'
+        )
+        
+        response_body = json.loads(response.get('body').read())
+        summary = response_body.get('content')[0].get('text')
+        
+        return {"conv_id": conv_id, "summary": summary}
+        
+    except Exception as e:
+        print(f"Error generating summary: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating summary: {str(e)}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

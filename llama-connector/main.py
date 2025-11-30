@@ -117,11 +117,38 @@ import os
 # Add parent directory to sys.path to allow importing RAG_helper
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from RAG_helper.processQuery import processQuery
+import knowledge_base
 
-async def process_text(input_text, company_id, author):
+async def get_history(conv_id, limit=10):
+    if not db_pool:
+        return ""
+    try:
+        async with db_pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT author, message FROM dialogs WHERE conv_id = %s ORDER BY message_id DESC LIMIT %s",
+                    (conv_id, limit)
+                )
+                rows = await cur.fetchall()
+                # Reverse to get chronological order
+                history_str = ""
+                for author, message in reversed(rows):
+                    history_str += f"{author}: {message}\n"
+                return history_str
+    except Exception as e:
+        print(f"Error fetching history: {e}")
+        return ""
+
+async def process_text(input_text, conv_id, company_id, author):
     print(f"Processing input from {author}: {input_text[:50]}...")
     
-    # Retrieve context from RAG
+    # 1. Get History
+    history = await get_history(conv_id)
+    
+    # 2. Get Knowledge
+    knowledge = await knowledge_base.get_relevant_knowledge(db_pool, company_id)
+    
+    # 3. Retrieve context from RAG (optional, keeping it as is)
     context = await asyncio.to_thread(processQuery, input_text, company_id)
     if context:
         print(f"Retrieved context (len={len(context)})")
@@ -129,18 +156,14 @@ async def process_text(input_text, company_id, author):
         print("No context retrieved")
 
     # Run all requests in parallel using the same Bedrock client
+    # Note: Updated prompt functions to accept history and knowledge
     results = await asyncio.gather(
-        ask_llm(bedrock_runtime, get_sus_prompt(input_text, context, author)),
-        ask_llm(bedrock_runtime, get_sug_prompt(input_text, context, author)),
-        ask_llm(bedrock_runtime, get_fac_prompt(input_text, context, author))
+        ask_llm(bedrock_runtime, get_sus_prompt(input_text, history, knowledge, context, author)),
+        ask_llm(bedrock_runtime, get_sug_prompt(input_text, history, knowledge, context, author)),
+        ask_llm(bedrock_runtime, get_fac_prompt(input_text, history, knowledge, context, author))
     )
 
     response_sus, response_sug, response_fac = results
-
-    # Optional: Save to files (can be kept for debugging or logging)
-    # open("output_sus", "w").write(response_sus)
-    # open("output_sug", "w").write(response_sug)
-    # open("output_fac", "w").write(response_fac)
 
     max_retries = 3
     final_result_json = None
@@ -148,7 +171,7 @@ async def process_text(input_text, company_id, author):
     for attempt in range(max_retries):
         print(f"Generating final result (Attempt {attempt + 1}/{max_retries})...")
         final_result_list = await asyncio.gather(
-            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, context, author))
+            ask_llm(bedrock_runtime, get_final_prompt(input_text, response_sus, response_sug, response_fac, history, context, author))
         )
         raw_result = final_result_list[0]
         
@@ -159,6 +182,8 @@ async def process_text(input_text, company_id, author):
                 json_str = json_str.split("```json")[1].split("```")[0].strip()
             elif "```" in json_str:
                 json_str = json_str.split("```")[1].split("```")[0].strip()
+            else:
+                json_str = raw_result # Try raw if no blocks
             
             final_result_json = json.loads(json_str)
             
@@ -181,8 +206,6 @@ async def process_text(input_text, company_id, author):
             "MESSAGE_COLOR": "red",
             "MESSAGE": "Error: Could not generate a valid response."
         }
-    
-    # open("final_result", "w").write(json.dumps(final_result_json))
     
     return json.dumps(final_result_json)
 
@@ -207,7 +230,7 @@ async def handler(websocket):
                 # Fire-and-forget DB save
                 asyncio.create_task(save_to_db(conv_id, input_text, author))
                 
-                response = await process_text(input_text, company_id, author)
+                response = await process_text(input_text, conv_id, company_id, author)
                 await websocket.send(response)
                 print("Sent response")
                 

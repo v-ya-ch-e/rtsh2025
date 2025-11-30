@@ -2,4 +2,5 @@ boto3
 websockets
 aiomysql
 botocore[crt]
+aiohttp
 

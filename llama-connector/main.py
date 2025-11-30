@@ -5,6 +5,7 @@ import json
 import boto3
 import websockets
 import aiomysql
+import aiohttp
 
 from sus_prompt import get_sus_prompt
 from sug_prompt import get_sug_prompt

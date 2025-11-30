@@ -16,7 +16,7 @@ CURRENT INPUT (from {author}):
 "{input}"
 
 YOUR TASK:
-Extract and list ALL relevant information from the History, Knowledge Base, and RAG Context.
+Extract and list ONLY facts that are relevant to the CURRENT input.
 Focus specifically on:
 1. PRICES: Any mentioned prices, discounts, or financial terms.
 2. If AUTHOR is "vendor": Verify their claims against the KNOWLEDGE BASE. Are the prices/specs correct?

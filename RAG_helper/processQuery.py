@@ -7,7 +7,7 @@ except ImportError:
     print("ChromaDB not available. RAG context will be disabled.")
     CHROMA_AVAILABLE = False
 
-from RAG_Helper.constants import QUERY_RES_LIMIT
+from RAG_helper.constants import QUERY_RES_LIMIT
 
 # 2. CONNECT TO DATABASE (No ingestion logic here)
 def processQuery(query, company_id):
@@ -60,4 +60,4 @@ def processQuery(query, company_id):
         return ""
 
 if __name__ == "__main__":
-    print(processQuery("product prices", 2))
+    print(processQuery("product prices", 1))

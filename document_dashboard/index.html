@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .company-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .company-name {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .doc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .doc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .upload-area {
+            margin-top: 15px;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            background-color: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0073e6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Document Management Dashboard</h1>
+    <div id="companies-container">Loading companies...</div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+
+        async function loadCompanies() {
+            try {
+                const response = await fetch(`${API_BASE}/companies`);
+                const companies = await response.json();
+                const container = document.getElementById("companies-container");
+                container.innerHTML = "";
+
+                for (const company of companies) {
+                    const card = document.createElement("div");
+                    card.className = "company-card";
+                    card.innerHTML = `
+                    <div class="company-header">
+                        <span class="company-name">${company.name} (ID: ${company.firmen_id})</span>
+                    </div>
+                    <div class="upload-area">
+                        <input type="file" id="file-${company.firmen_id}">
+                        <button class="btn" onclick="uploadDocument(${company.firmen_id})">Upload Document</button>
+                    </div>
+                    <h3>Documents</h3>
+                    <ul class="doc-list" id="docs-${company.firmen_id}">Loading docs...</ul>
+                `;
+                    container.appendChild(card);
+                    loadDocuments(company.firmen_id);
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById("companies-container").innerText = "Failed to load companies.";
+            }
+        }
+
+        async function loadDocuments(companyId) {
+            try {
+                const response = await fetch(`${API_BASE}/companies/${companyId}/documents`);
+                const docs = await response.json();
+                const list = document.getElementById(`docs-${companyId}`);
+                list.innerHTML = "";
+
+                if (docs.length === 0) {
+                    list.innerHTML = "<li>No documents uploaded.</li>";
+                    return;
+                }
+
+                docs.forEach(doc => {
+                    const item = document.createElement("li");
+                    item.className = "doc-item";
+                    item.innerHTML = `
+                    <span>${doc.filename}</span>
+                    <span style="font-size: 0.8em; color: gray;">${new Date(doc.uploaded_at).toLocaleString()}</span>
+                `;
+                    list.appendChild(item);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function uploadDocument(companyId) {
+            const input = document.getElementById(`file-${companyId}`);
+            const file = input.files[0];
+            if (!file) {
+                alert("Please select a file first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(`${API_BASE}/companies/${companyId}/documents`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert("Upload successful!");
+                    input.value = "";
+                    loadDocuments(companyId);
+                } else {
+                    alert("Upload failed.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error uploading file.");
+            }
+        }
+
+        loadCompanies();
+    </script>
+
+</body>
+
+</html>

@@ -1,9 +1,18 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
 import uvicorn
 import dbcreds
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db_connection():
     try:
@@ -103,6 +112,58 @@ def create_conversation(conv: ConversationCreate):
         return {"id": new_id, "vendor_id": conv.vendor_id}
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+from fastapi import UploadFile, File
+import shutil
+import os
+
+UPLOAD_DIR = "uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+@app.post("/companies/{company_id}/documents")
+async def upload_document(company_id: int, file: UploadFile = File(...)):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    try:
+        file_path = os.path.join(UPLOAD_DIR, f"{company_id}_{file.filename}")
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO company_documents (company_id, filename, file_path) 
+            VALUES (%s, %s, %s)
+        """, (company_id, file.filename, file_path))
+        conn.commit()
+        
+        return {"message": "File uploaded successfully", "filename": file.filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {e}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.get("/companies/{company_id}/documents")
+def get_documents(company_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM company_documents WHERE company_id = %s", (company_id,))
+        rows = cursor.fetchall()
+        return rows
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database query error: {err}")
     finally:
         if conn.is_connected():
             cursor.close()

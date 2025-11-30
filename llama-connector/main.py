@@ -116,7 +116,7 @@ import sys
 import os
 # Add parent directory to sys.path to allow importing RAG_helper
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from RAG_helper.processQuery import processQuery
+# from RAG_helper.processQuery import processQuery
 import knowledge_base
 
 async def get_history(conv_id, limit=10):
@@ -149,11 +149,12 @@ async def process_text(input_text, conv_id, company_id, author):
     knowledge = await knowledge_base.get_relevant_knowledge(db_pool, company_id)
     
     # 3. Retrieve context from RAG (optional, keeping it as is)
-    context = await asyncio.to_thread(processQuery, input_text, company_id)
-    if context:
-        print(f"Retrieved context (len={len(context)})")
-    else:
-        print("No context retrieved")
+    context = ""
+    # context = await asyncio.to_thread(processQuery, input_text, company_id)
+    # if context:
+    #     print(f"Retrieved context (len={len(context)})")
+    # else:
+    #     print("No context retrieved")
 
     # Run all requests in parallel using the same Bedrock client
     # Note: Updated prompt functions to accept history and knowledge

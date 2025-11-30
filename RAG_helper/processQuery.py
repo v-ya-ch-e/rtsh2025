@@ -35,7 +35,7 @@ def processQuery(query, company_id):
 
         db = chromadb.PersistentClient(path=db_path)
         chroma_collection = db.get_collection(
-            name="collection_dev_0" + str(company_id),
+            name="collection_dev_2" + str(company_id),
             embedding_function=OpenAIEmbeddingFunction(
                 api_key=api_key,
                 model_name="text-embedding-3-small"

@@ -21,14 +21,17 @@ This directory contains a simulation environment that orchestrates a negotiation
 - **Llama Connector**: Must be running on port 8767 (or configured URI).
 - **AskLio API**: Accessible via internet.
 
-## Local Usage
+## Usage
 
-1.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-2.  Run the server:
+1.  **Start the Server**:
     ```bash
     python3 simulation_server.py
     ```
-3.  Open `index.html` in your browser.
+
+2.  **Connect Client**:
+    - Connect your existing frontend to `ws://<server-ip>:8768`.
+    - Or use the provided `test_simulation_client.py`.
+
+3.  **Visualize Negotiation**:
+    - Open `http://<server-ip>:8768/` in your browser.
+    - This page shows the live conversation and AI hints in real-time.

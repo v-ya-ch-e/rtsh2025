@@ -16,11 +16,14 @@ CURRENT INPUT (from {author}):
 "{input}"
 
 YOUR TASK:
-Extract and list ALL relevant information from the History, Knowledge Base, and RAG Context.
+Extract and list ONLY facts that are relevant to the CURRENT input.
 Focus specifically on:
 1. PRICES: Any mentioned prices, discounts, or financial terms.
-2. HISTORY: Previous deals, past interactions, or established terms with this vendor.
-3. VENDOR FACTS: Reputation, product specs, known issues, or strengths.
+2. If AUTHOR is "vendor": Verify their claims against the KNOWLEDGE BASE. Are the prices/specs correct?
+3. If AUTHOR is "user": Are they stating facts correctly?
+4. If AUTHOR is "hint": Ignore for fact-checking purposes unless it contains previously retrieved facts.
+5. HISTORY: Previous deals, past interactions, or established terms with this vendor.
+6. VENDOR FACTS: Reputation, product specs, known issues, or strengths.
 
 OUTPUT RULES:
 1. Output a bulleted list of facts.

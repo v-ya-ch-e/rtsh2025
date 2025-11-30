@@ -1,9 +1,8 @@
 # AWS Deployment Guide
 
 This guide covers the deployment of the entire `rtsh2025` repository, including:
-1.  **Llama Connector**: WebSocket server for negotiation assistance (with RAG).
-2.  **FastAPI Hands**: API for company data.
-3.  **RAG Helper**: Context retrieval system.
+1.  **Llama Connector**: WebSocket server for negotiation assistance.
+2.  **FastAPI Hands**: API for company data and storage.
 
 ## Instance Recommendation
 **Instance Type**: `t3.small` (2 vCPU, 2 GB RAM) or `t3.medium` if you expect heavy load.
@@ -43,15 +42,13 @@ sudo apt install awscli -y
 ```
 
 ### 4. Deploy Code
-**Important**: Clone the *entire* repository to ensure `llama-connector` can access `RAG_helper`.
-
 ```bash
 # Clone repo
 git clone <your-repo-url> rtsh2025
 cd rtsh2025
 ```
 
-### 5. Setup Llama Connector (WebSocket + RAG)
+### 5. Setup Llama Connector (WebSocket)
 ```bash
 cd llama-connector
 
@@ -68,12 +65,6 @@ aws configure
 # Configure DB Credentials
 cp dbcreds_template.py dbcreds.py
 nano dbcreds.py  # Fill in MySQL details
-
-# Configure OpenAI Key for RAG
-# Option A: Env Var (Recommended)
-export OPENAI_API_KEY="sk-..."
-# Option B: Cred file
-echo "sk-..." > ../RAG_helper/cred
 ```
 
 ### 6. Setup FastAPI Hands (Company API)

@@ -169,5 +169,48 @@ def get_documents(company_id: int):
             cursor.close()
             conn.close()
 
+
+from fastapi import Body
+
+STORAGE_DIR = "storage"
+if not os.path.exists(STORAGE_DIR):
+    os.makedirs(STORAGE_DIR)
+
+def get_company_storage_path(company_id: int):
+    path = os.path.join(STORAGE_DIR, "companies", str(company_id))
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
+@app.get("/companies/{company_id}/context")
+def get_company_context(company_id: int):
+    path = os.path.join(get_company_storage_path(company_id), "context.txt")
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return {"content": f.read()}
+    return {"content": ""}
+
+@app.post("/companies/{company_id}/context")
+def save_company_context(company_id: int, content: str = Body(..., media_type="text/plain")):
+    path = os.path.join(get_company_storage_path(company_id), "context.txt")
+    with open(path, "w") as f:
+        f.write(content)
+    return {"message": "Context saved"}
+
+@app.get("/companies/{company_id}/knowledge_file")
+def get_company_knowledge_file(company_id: int):
+    path = os.path.join(get_company_storage_path(company_id), "knowledge.txt")
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return {"content": f.read()}
+    return {"content": ""}
+
+@app.post("/companies/{company_id}/knowledge_file")
+def save_company_knowledge_file(company_id: int, content: str = Body(..., media_type="text/plain")):
+    path = os.path.join(get_company_storage_path(company_id), "knowledge.txt")
+    with open(path, "w") as f:
+        f.write(content)
+    return {"message": "Knowledge saved"}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,0 +1,18 @@
+SERVICE LEVEL AGREEMENT (SLA) v4.0
+Provider: White Desert Labs
+
+1. UPTIME GUARANTEE
+- Standard Tier: 99.9% (approx 43m downtime/month allowed).
+- Enterprise Tier: 99.99% (approx 4m downtime/month allowed).
+
+2. PENALTIES
+If uptime drops below guarantee:
+- 99.0% - 99.9%: 10% Service Credit
+- <99.0%: 25% Service Credit
+
+3. SUPPORT RESPONSE TIMES
+- Severity 1 (Critical): < 1 Hour (Enterprise) / < 4 Hours (Standard)
+- Severity 2 (High): < 4 Hours (Enterprise) / < 8 Hours (Standard)
+
+4. INDEMNIFICATION
+Provider indemnifies Client against IP infringement claims up to the value of 12 months of service fees. UNLIMITED INDEMNIFICATION IS EXPLICITLY EXCLUDED.

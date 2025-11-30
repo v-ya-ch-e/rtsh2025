@@ -5,6 +5,7 @@ import json
 import boto3
 import websockets
 import aiomysql
+import aiohttp
 
 from sus_prompt import get_sus_prompt
 from sug_prompt import get_sug_prompt
@@ -114,9 +115,6 @@ async def ask_llm(client, prompt):
 
 import sys
 import os
-# Add parent directory to sys.path to allow importing RAG_helper
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# from RAG_helper.processQuery import processQuery
 import knowledge_base
 
 async def get_history(conv_id, limit=10):
@@ -148,8 +146,19 @@ async def process_text(input_text, conv_id, company_id, author):
     # 2. Get Knowledge
     knowledge = await knowledge_base.get_relevant_knowledge(db_pool, company_id)
     
-    # 3. Retrieve context from RAG (optional, keeping it as is)
+    # 3. Retrieve context from Local Storage API
     context = ""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"http://localhost:8000/companies/{company_id}/context") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    context = data.get("content", "")
+                    if context:
+                        print(f"Retrieved context (len={len(context)})")
+    except Exception as e:
+        print(f"Error fetching context from API: {e}")
+
     # context = await asyncio.to_thread(processQuery, input_text, company_id)
     # if context:
     #     print(f"Retrieved context (len={len(context)})")
@@ -208,6 +217,11 @@ async def process_text(input_text, conv_id, company_id, author):
             "MESSAGE": "Error: Could not generate a valid response."
         }
     
+    # Save the hint to the database
+    hint_text = final_result_json.get("MESSAGE", "")
+    if hint_text:
+        asyncio.create_task(save_to_db(conv_id, hint_text, "hint"))
+
     return json.dumps(final_result_json)
 
 

@@ -4,7 +4,14 @@ A simple FastAPI application to serve company data from a MySQL database.
 
 ## Features
 
-- **Companies Endpoint**: `GET /companies` retrieves all companies from the database.
+- **Companies Endpoint**: `GET /companies` retrieves all companies.
+- **Conversations Endpoint**: `POST /conversations` creates a new conversation.
+- **Documents Endpoints**:
+    - `POST /companies/{id}/documents`: Upload a document.
+    - `GET /companies/{id}/documents`: List documents.
+- **Local Storage Endpoints**:
+    - `GET/POST /companies/{id}/context`: Read/Write context file.
+    - `GET/POST /companies/{id}/knowledge_file`: Read/Write knowledge base file.
 
 ## Prerequisites
 

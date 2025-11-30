@@ -2,5 +2,5 @@ boto3
 websockets
 aiomysql
 botocore[crt]
-chromadb
-openai
+aiohttp
+

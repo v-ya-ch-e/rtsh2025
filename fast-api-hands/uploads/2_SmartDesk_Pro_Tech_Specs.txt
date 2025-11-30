@@ -1,0 +1,23 @@
+PRODUCT SPECIFICATIONS: SmartDesk Pro
+Model: SD-PRO-2024
+
+DIMENSIONS:
+- Width: 120cm - 180cm (Adjustable)
+- Depth: 80cm
+- Height Range: 60cm - 125cm
+
+MECHANISM:
+- Dual Motor System (Bosch internals)
+- Lift Capacity: 120kg
+- Noise Level: <45dB
+- Speed: 38mm/s
+
+WARRANTY:
+- Frame & Motors: 5 Years
+- Electronics: 2 Years
+- Desktop: 1 Year
+
+PRICING:
+- Single Unit: $800
+- Bulk (20+): $700
+- Installation: $50/unit (Waived for Bulk)

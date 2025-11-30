@@ -98,6 +98,21 @@
                         <input type="file" id="file-${company.firmen_id}">
                         <button class="btn" onclick="uploadDocument(${company.firmen_id})">Upload Document</button>
                     </div>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn" style="background-color: #4caf50;" onclick="toggleEditor(${company.firmen_id}, 'context')">Edit Context</button>
+                        <button class="btn" style="background-color: #ff9800;" onclick="toggleEditor(${company.firmen_id}, 'knowledge')">Edit Knowledge</button>
+                    </div>
+
+                    <div id="editor-${company.firmen_id}" style="display: none; margin-top: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                        <h3 id="editor-title-${company.firmen_id}">Editing...</h3>
+                        <textarea id="editor-text-${company.firmen_id}" rows="10" style="width: 100%; font-family: monospace;"></textarea>
+                        <div style="margin-top: 10px; text-align: right;">
+                            <button class="btn" onclick="saveEditor(${company.firmen_id})">Save</button>
+                            <button class="btn" style="background-color: #ccc;" onclick="closeEditor(${company.firmen_id})">Cancel</button>
+                        </div>
+                    </div>
+
                     <h3>Documents</h3>
                     <ul class="doc-list" id="docs-${company.firmen_id}">Loading docs...</ul>
                 `;
@@ -126,9 +141,9 @@
                     const item = document.createElement("li");
                     item.className = "doc-item";
                     item.innerHTML = `
-                    <span>${doc.filename}</span>
-                    <span style="font-size: 0.8em; color: gray;">${new Date(doc.uploaded_at).toLocaleString()}</span>
-                `;
+                        <span>${doc.filename}</span>
+                        <span style="font-size: 0.8em; color: gray;">${new Date(doc.uploaded_at).toLocaleString()}</span>
+                    `;
                     list.appendChild(item);
                 });
             } catch (e) {
@@ -163,6 +178,57 @@
             } catch (e) {
                 console.error(e);
                 alert("Error uploading file.");
+            }
+        }
+
+        let currentEditType = {}; // {companyId: 'context' | 'knowledge'}
+
+        async function toggleEditor(companyId, type) {
+            const editor = document.getElementById(`editor-${companyId}`);
+            const title = document.getElementById(`editor-title-${companyId}`);
+            const textarea = document.getElementById(`editor-text-${companyId}`);
+
+            currentEditType[companyId] = type;
+            title.innerText = type === 'context' ? "Editing Context (RAG)" : "Editing Knowledge Base";
+            editor.style.display = "block";
+            textarea.value = "Loading...";
+
+            const endpoint = type === 'context' ? 'context' : 'knowledge_file';
+            try {
+                const response = await fetch(`${API_BASE}/companies/${companyId}/${endpoint}`);
+                const data = await response.json();
+                textarea.value = data.content || "";
+            } catch (e) {
+                textarea.value = "Error loading content.";
+            }
+        }
+
+        function closeEditor(companyId) {
+            document.getElementById(`editor-${companyId}`).style.display = "none";
+        }
+
+        async function saveEditor(companyId) {
+            const type = currentEditType[companyId];
+            const textarea = document.getElementById(`editor-text-${companyId}`);
+            const content = textarea.value;
+            const endpoint = type === 'context' ? 'context' : 'knowledge_file';
+
+            try {
+                const response = await fetch(`${API_BASE}/companies/${companyId}/${endpoint}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: content
+                });
+
+                if (response.ok) {
+                    alert("Saved successfully!");
+                    closeEditor(companyId);
+                } else {
+                    alert("Failed to save.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error saving content.");
             }
         }
 

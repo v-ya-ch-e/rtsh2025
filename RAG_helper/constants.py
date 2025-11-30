@@ -1,1 +1,0 @@
-QUERY_RES_LIMIT = 10
